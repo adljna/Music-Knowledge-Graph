@@ -1,0 +1,42 @@
+SELECT ?song ?songLabel ?contributor ?contributorLabel ?role
+       ?album ?albumLabel
+       ?genre ?genreLabel ?recordLabel ?recordLabelLabel
+       ?country ?countryLabel ?releaseDate
+WHERE {
+  {
+    SELECT DISTINCT ?song
+    WHERE {
+      ?song wdt:P31 wd:Q7366 .
+      ?song wdt:P577 ?releaseDate .
+      FILTER(YEAR(?releaseDate) >= 2016)
+    }
+    LIMIT 200
+  }
+
+  {
+    ?song wdt:P175 ?contributor .
+    BIND("performer" AS ?role)
+  }
+  UNION
+  {
+    ?song wdt:P86 ?contributor .
+    BIND("composer" AS ?role)
+  }
+  UNION
+  {
+    ?song wdt:P676 ?contributor .
+    BIND("lyricist" AS ?role)
+  }
+  UNION
+  {
+    ?song wdt:P162 ?contributor .
+    BIND("producer" AS ?role)
+  }
+
+  OPTIONAL { ?song wdt:P136 ?genre . }
+  OPTIONAL { ?song wdt:P361 ?album . }
+  OPTIONAL { ?song wdt:P264 ?recordLabel . }
+  OPTIONAL { ?contributor wdt:P27 ?country . }
+
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
+}
