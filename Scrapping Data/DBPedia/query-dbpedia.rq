@@ -1,0 +1,58 @@
+PREFIX dbo: <http://dbpedia.org/ontology/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+SELECT ?song ?songLabel ?contributor ?contributorLabel ?role
+       ?album ?albumLabel
+       ?genre ?genreLabel ?recordLabel ?recordLabelLabel
+       ?country ?countryLabel ?releaseDate
+WHERE {
+
+  {
+    SELECT DISTINCT ?song ?releaseDate
+    WHERE {
+      ?song a dbo:Song .
+      ?song dbo:releaseDate ?releaseDate .
+      FILTER(?releaseDate >= "2016-01-01"^^xsd:date)
+    }
+    LIMIT 200
+  }
+
+  {
+    ?song dbo:artist ?contributor .
+    BIND("performer" AS ?role)
+  }
+  UNION
+  {
+    ?song dbo:composer ?contributor .
+    BIND("composer" AS ?role)
+  }
+  UNION
+  {
+    ?song dbo:lyricist ?contributor .
+    BIND("lyricist" AS ?role)
+  }
+  UNION
+  {
+    ?song dbo:producer ?contributor .
+    BIND("producer" AS ?role)
+  }
+
+  OPTIONAL { ?song dbo:genre ?genre . }
+  OPTIONAL { ?song dbo:album ?album . }
+  OPTIONAL { ?song dbo:recordLabel ?recordLabel . }
+
+  OPTIONAL { 
+    ?contributor dbo:birthPlace ?place .
+    OPTIONAL { ?place dbo:country ?country . }
+  }
+
+  # Label 
+  OPTIONAL { ?song rdfs:label ?songLabel FILTER (lang(?songLabel) = "en") }
+  OPTIONAL { ?contributor rdfs:label ?contributorLabel FILTER (lang(?contributorLabel) = "en") }
+  OPTIONAL { ?album rdfs:label ?albumLabel FILTER (lang(?albumLabel) = "en") }
+  OPTIONAL { ?genre rdfs:label ?genreLabel FILTER (lang(?genreLabel) = "en") }
+  OPTIONAL { ?recordLabel rdfs:label ?recordLabelLabel FILTER (lang(?recordLabelLabel) = "en") }
+  OPTIONAL { ?country rdfs:label ?countryLabel FILTER (lang(?countryLabel) = "en") }
+
+}
